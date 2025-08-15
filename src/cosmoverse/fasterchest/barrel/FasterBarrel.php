@@ -116,7 +116,7 @@ class FasterBarrel extends Barrel{
         $this->state = self::STATE_ALL_SAVED_CHANGES;
     }
 
-    protected function addAdditionalSpawnData(CompoundTag $nbt) : void{
+    public function addAdditionalSpawnData(CompoundTag $nbt) : void{
         parent::addAdditionalSpawnData($nbt);
         $nbt->setString(Tile::TAG_ID, TileFactory::getInstance()->getSaveId(Barrel::class));
     }
