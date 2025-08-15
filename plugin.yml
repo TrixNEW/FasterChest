@@ -4,14 +4,6 @@ api: 5.0.0
 version: 2.0.0-beta
 author: Muqsit
 
-commands:
-  fasterchest:
-    description: FasterChest management commands
-    usage: /fasterchest convert/revert <world>
-    permission: fasterchest.command.fasterchest
-    aliases: ["fasterchests"]
-
 permissions:
-  fasterchest.command.fasterchest:
-    description: Ability to use /fasterchest command
+  manage.fasterchest.command:
     default: op

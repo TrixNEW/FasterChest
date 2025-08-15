@@ -19,7 +19,6 @@ use function implode;
 class FasterBarrel extends Barrel{
 
     public const TAG_INITIALIZED = "fasterbarrel:initialized";
-
     public const STATE_NOT_LOADED = 0;
     public const STATE_LOADING = 1;
     public const STATE_UNSAVED_CHANGES = 2;

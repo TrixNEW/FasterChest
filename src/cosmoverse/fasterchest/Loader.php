@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace cosmoverse\fasterchest;
 
 use cosmoverse\fasterchest\barrel\FasterBarrel;
+use cosmoverse\fasterchest\command\FasterchestCommand;
 use Generator;
 use LevelDB;
 use pocketmine\block\Barrel;
@@ -24,6 +25,8 @@ use pocketmine\event\world\WorldUnloadEvent;
 use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
+use pocketmine\Server;
+use pocketmine\utils\SingletonTrait;
 use pocketmine\utils\TextFormat;
 use pocketmine\world\World;
 use pocketmine\YmlServerProperties;
@@ -35,7 +38,8 @@ use function count;
 use function implode;
 use const LEVELDB_ZLIB_RAW_COMPRESSION;
 
-final class Loader extends PluginBase implements Listener{
+final class Loader extends PluginBase implements Listener {
+    use SingletonTrait;
 
     public const CHEST_TILE_ID = "fasterchest:chest";
     public const BARREL_TILE_ID = "fasterchest:barrel";
@@ -50,6 +54,8 @@ final class Loader extends PluginBase implements Listener{
      * @throws \ReflectionException
      */
     protected function onLoad() : void{
+        self::setInstance($this);
+
         TileFactory::getInstance()->register(FasterChest::class, [self::CHEST_TILE_ID]);
         TileFactory::getInstance()->register(FasterBarrel::class, [self::BARREL_TILE_ID]);
 
@@ -89,6 +95,8 @@ final class Loader extends PluginBase implements Listener{
         foreach($this->getServer()->getWorldManager()->getWorlds() as $world){
             $this->applyListenerToWorld($world);
         }
+
+        Server::getInstance()->getCommandMap()->register("fasterchest", new FasterchestCommand());
     }
 
     protected function onDisable() : void{
@@ -377,77 +385,5 @@ final class Loader extends PluginBase implements Listener{
             $total_reversions += $reverted;
         }
         return $total_reversions;
-    }
-
-    public function onCommand(CommandSender $sender, Command $command, string $label, array $args) : bool{
-        if(isset($args[0])){
-            if($args[0] === "convert"){
-                if(isset($args[1])){
-                    $world = $args[1];
-                    if(!$this->getServer()->getWorldManager()->loadWorld($world)){
-                        $sender->sendMessage(TextFormat::RED . "World {$world} could not be loaded.");
-                        return true;
-                    }
-
-                    $world = $this->getServer()->getWorldManager()->getWorldByName($world);
-                    if($world === null){
-                        $sender->sendMessage(TextFormat::RED . "World {$world} could not be retrieved.");
-                        return true;
-                    }
-
-                    $sender->sendMessage(TextFormat::YELLOW . "Converting chests and barrels in {$world->getFolderName()}...");
-                    Await::f2c(function() use($world, $sender) : Generator{
-                        $result = yield from $this->convertWorld($world);
-                        if(!($sender instanceof Player) || $sender->isConnected()){
-                            $sender->sendMessage(TextFormat::GREEN . "Converted {$result} container(s) in {$world->getFolderName()}.");
-                        }
-                    });
-                    return true;
-                }
-            }elseif($args[0] === "revert"){
-                if(isset($args[1])){
-                    $world = $args[1];
-                    if(!$this->getServer()->getWorldManager()->loadWorld($world)){
-                        $sender->sendMessage(TextFormat::RED . "World {$world} could not be loaded.");
-                        return true;
-                    }
-
-                    $world = $this->getServer()->getWorldManager()->getWorldByName($world);
-                    if($world === null){
-                        $sender->sendMessage(TextFormat::RED . "World {$world} could not be retrieved.");
-                        return true;
-                    }
-
-                    $sender->sendMessage(TextFormat::YELLOW . "Reverting chests and barrels in {$world->getFolderName()}...");
-                    Await::f2c(function() use($world, $sender) : Generator{
-                        $result = yield from $this->revertWorld($world);
-                        if(!($sender instanceof Player) || $sender->isConnected()){
-                            $sender->sendMessage(TextFormat::GREEN . "Reverted {$result} container(s) in {$world->getFolderName()}.");
-                        }
-                    });
-                    return true;
-                }
-            }
-        }
-
-        $sender->sendMessage(TextFormat::BOLD . TextFormat::YELLOW . "{$this->getName()} Help Command");
-        $sender->sendMessage(TextFormat::YELLOW . "/{$label} convert <world> " . TextFormat::GRAY . "- convert all vanilla chests and barrels in world to fast containers");
-        $sender->sendMessage(TextFormat::YELLOW . "/{$label} revert <world> " . TextFormat::GRAY . "- revert all fast containers in world to vanilla containers");
-        $sender->sendMessage(" ");
-        $sender->sendMessage(TextFormat::YELLOW . "When should I use these commands?");
-        $sender->sendMessage(implode(" ", [
-            TextFormat::GRAY . "When you first install this plugin on your server, run " . TextFormat::YELLOW . "/{$label} convert <world>" . TextFormat::GRAY . " on the",
-            "your main worlds (i.e., worlds that take long to /save-all). If you choose to uninstall this plugin from your server, be sure to run" . TextFormat::YELLOW,
-            "/{$label} revert <world>" . TextFormat::GRAY . " on all of your worlds."
-        ]));
-        $sender->sendMessage(" ");
-        $sender->sendMessage(TextFormat::YELLOW . "What are the consequences of not running these commands?");
-        $sender->sendMessage(implode(" ", [
-            TextFormat::GRAY . "Not executing " . TextFormat::YELLOW . "/{$label} convert <world>" . TextFormat::GRAY . " at the time of installation (or later) means existing",
-            "vanilla containers in your worlds will still impact /save-all performance. This will not affect your world data in any way. However, failing to execute",
-            TextFormat::YELLOW . "/{$label} revert <world>" . TextFormat::GRAY . " before uninstalling this plugin means newly placed containers (and also those that were",
-            "converted) will be corrupted."
-        ]));
-        return true;
     }
 }
