@@ -16,14 +16,14 @@ use pocketmine\nbt\tag\ListTag;
 use pocketmine\nbt\TreeRoot;
 use function assert;
 
-final class DefaultFasterChestSerializer implements FasterChestSerializer{
+final readonly class DefaultFasterChestSerializer implements FasterChestSerializer{
 
 	public static function instance() : self{
 		static $instance = null;
 		return $instance ??= new self();
 	}
 
-	readonly private BigEndianNbtSerializer $serializer;
+	private BigEndianNbtSerializer $serializer;
 
 	private function __construct(){
 		$this->serializer = new BigEndianNbtSerializer();
