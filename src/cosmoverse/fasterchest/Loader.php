@@ -15,19 +15,15 @@ use pocketmine\block\tile\Barrel as VanillaBarrelTile;
 use pocketmine\block\tile\Chest as VanillaChestTile;
 use pocketmine\block\tile\TileFactory;
 use pocketmine\block\VanillaBlocks;
-use pocketmine\command\Command;
-use pocketmine\command\CommandSender;
 use pocketmine\event\Listener;
 use pocketmine\event\world\ChunkLoadEvent;
 use pocketmine\event\world\ChunkUnloadEvent;
 use pocketmine\event\world\WorldLoadEvent;
 use pocketmine\event\world\WorldUnloadEvent;
-use pocketmine\player\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\scheduler\ClosureTask;
 use pocketmine\Server;
 use pocketmine\utils\SingletonTrait;
-use pocketmine\utils\TextFormat;
 use pocketmine\world\World;
 use pocketmine\YmlServerProperties;
 use ReflectionProperty;
@@ -35,7 +31,6 @@ use RuntimeException;
 use SOFe\AwaitGenerator\Await;
 use Symfony\Component\Filesystem\Path;
 use function count;
-use function implode;
 use const LEVELDB_ZLIB_RAW_COMPRESSION;
 
 final class Loader extends PluginBase implements Listener {
