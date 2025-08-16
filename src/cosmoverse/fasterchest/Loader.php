@@ -305,10 +305,10 @@ final class Loader extends PluginBase implements Listener {
                 $item_count = null;
                 $tile_type = null;
 
-                if($tile::class === VanillaChestTile::class){
+                if($tile instanceof VanillaChestTile){
                     $item_count = $this->convertChestTile($tile);
                     $tile_type = "chest";
-                } elseif($tile::class === VanillaBarrelTile::class){
+                } elseif($tile instanceof VanillaBarrelTile){
                     $item_count = $this->convertBarrelTile($tile);
                     $tile_type = "barrel";
                 }
